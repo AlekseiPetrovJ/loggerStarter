@@ -27,9 +27,14 @@ mvn spring-boot:run
 
 
 
-## Включение логирования в application.yml
+## Настройка логирования в application.yml
 Для включения логирования добавьте параметр в файл application.yml
 ```yml
 http-logger:
   enabled: true
+```
+Настройка url для логирования
+```yml
+http-logger:
+  log-url: /example
 ```
