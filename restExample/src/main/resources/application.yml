@@ -7,6 +7,6 @@ spring:
     activate:
       on-profile: "dev"
   application:
-    name: logger-spring-boot-starter
+    name: http-logger-example
 http-logger:
-  enabled:
+  enabled: true
