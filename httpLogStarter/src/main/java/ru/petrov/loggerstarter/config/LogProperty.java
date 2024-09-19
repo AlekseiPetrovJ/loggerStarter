@@ -1,4 +1,4 @@
-package ru.petrov.config;
+package ru.petrov.loggerstarter.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
