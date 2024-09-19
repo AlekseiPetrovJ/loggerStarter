@@ -1,10 +1,60 @@
 # Spring Boot Starter для логирования HTTP запросов
 
-## Запуск приложения
-### Требования
-Установленный maven
+Spring Boot Starter, который предоставляет возможность логировать HTTP запросы в вашем приложении на базе Spring Boot.
+
+Логируются входящие и исходящие HTTP запросы и ответы вашего приложения. Предусмотрена настройка для указания URL для логирования. 
+
+Логирование включает в себя: метод запроса, URL, заголовки запроса и ответа, код ответа, тело ответа и запроса, время обработки запроса.
+## Подлючение в проект
+
+Для подключения стартера добавьте зависимость http-log-starter
+
+Maven:
+
+```
+<dependency>
+    <groupId>ru.petrov</groupId>
+    <artifactId>http-log-starter</artifactId>
+    <version>1.0-SNAPSHOT</version>
+ </dependency>
+```
+
+## Настройка логирования в application.yml
+
+Для включения логирования добавьте параметр в файл application.yml
+
+```yml
+http-logger:
+  enabled: true
+```
+
+Настройка url для логирования
+
+```yml
+http-logger:
+  log-url: /example
+```
+
+Для логирования всех запросов и ответов укажите `/` в качестве log-url
+```yml
+http-logger:
+  log-url: /
+```
+
+
+## Запуск демонстрационного приложения
+
+В целях демонстрации работы стартера, проект разбит на два модуля:
+- httpLogStarter - собственно сам Spring Boot Starter для логирования HTTP запросов
+- restExample - простой REST контроллер с уже подключенным httpLogStarter и Swagger.
+
+### Системные требования
+Установленные java 21 и maven
 
 ### Установка стартера в локальный maven репозиторий
+
+Скачайте проект из ветки master
+
 Перейдите в каталог модуля стартера
 ```bash
 cd .\httpLogStarter\
@@ -14,7 +64,7 @@ cd .\httpLogStarter\
 mvn clean install
 ```
 
-### Запуск приложения
+### Запуск демо-приложения с REST контроллером
 Перейдите в каталог модуля 
 ```bash
 cd ..\restExample\
@@ -25,16 +75,8 @@ cd ..\restExample\
 mvn spring-boot:run
 ```
 
+### OpenAPI демо-приложения
 
+После запуска демо-приложения становится доступным OpenApi:
 
-## Настройка логирования в application.yml
-Для включения логирования добавьте параметр в файл application.yml
-```yml
-http-logger:
-  enabled: true
-```
-Настройка url для логирования
-```yml
-http-logger:
-  log-url: /example
-```
+[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
