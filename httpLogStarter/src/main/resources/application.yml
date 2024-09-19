@@ -10,3 +10,4 @@ spring:
     name: "logger-spring-boot-starter"
 http-logger:
   enabled: true
+  log-url: /example

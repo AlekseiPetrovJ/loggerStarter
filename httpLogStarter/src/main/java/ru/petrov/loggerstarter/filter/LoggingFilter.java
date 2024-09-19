@@ -5,20 +5,72 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.ContentCachingResponseWrapper;
 
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
+import java.util.UUID;
 
 @Slf4j
 public class LoggingFilter extends OncePerRequestFilter {
+    @Value("${http-logger.log-url}")
+    private String logUrl;
+
+    /**
+     * Логируется запросы и ответы по URL указанному в настройке application.yml http-logger: log-url:
+     *
+     * @param request
+     * @param response
+     * @param filterChain
+     * @throws ServletException
+     * @throws IOException
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        if (!logUrl.equals(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        UUID logUuid = UUID.randomUUID();
         long startTime = System.currentTimeMillis();
+        ContentCachingRequestWrapper cRequest = new ContentCachingRequestWrapper(request);
+        ContentCachingResponseWrapper cResponse = new ContentCachingResponseWrapper(response);
+
+        filterChain.doFilter(cRequest, cResponse);
+        logRequest(logUuid, cRequest);
+
+        long duration = System.currentTimeMillis() - startTime;
+
+        logResponse(logUuid, cResponse, duration);
+        cResponse.copyBodyToResponse();
+    }
+
+    private static void logResponse(UUID logUuid, ContentCachingResponseWrapper cResponse, long duration) {
         log.info("""
                         
+                        Log UUID {}\
+
+                        Status: {}\
+                                                
+                        Body: {}
+
+                        Duration: {} ms""",
+                logUuid,
+                cResponse.getStatus(),
+                new String(cResponse.getContentAsByteArray(), StandardCharsets.UTF_8),
+                duration);
+    }
+
+    private static void logRequest(UUID logUuid, ContentCachingRequestWrapper cRequest) {
+        log.info("""
+                        
+                        Log UUID: {}\
+                                                
                         Incoming request: {} {}\
 
                         Headers: {}\
@@ -26,38 +78,14 @@ public class LoggingFilter extends OncePerRequestFilter {
                         Body: {}\
                         
                         Remote Addr: {}""",
-                request.getMethod(),
-                request.getRequestURI(),
-                getHeader(request),
-                getBody(request),
-                request.getRemoteAddr());
-
-        filterChain.doFilter(request, response);
-
-        long duration = System.currentTimeMillis() - startTime;
-
-        log.info("""
-                        
-                        Outgoing response: {}\
-
-                        Status: {}\
-
-                        Duration: {} ms""",
-                request.getRequestURI(),
-                response.getStatus(),
-                duration);
+                logUuid,
+                cRequest.getMethod(),
+                cRequest.getRequestURI(),
+                getHeader(cRequest),
+                new String(cRequest.getContentAsByteArray(), StandardCharsets.UTF_8),
+                cRequest.getRemoteAddr());
     }
 
-    private static StringBuilder getBody(HttpServletRequest request) throws IOException {
-        StringBuilder body = new StringBuilder();
-        String line;
-
-        BufferedReader reader = request.getReader();
-        while ((line = reader.readLine()) != null) {
-            body.append(line).append("\n");
-        }
-        return body;
-    }
 
     private static StringBuilder getHeader(HttpServletRequest request) {
         Enumeration<String> headerNames = request.getHeaderNames();

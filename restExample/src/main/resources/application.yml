@@ -8,5 +8,11 @@ spring:
       on-profile: "dev"
   application:
     name: http-logger-example
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /api-docs
 http-logger:
   enabled: true
+  log-url: /example

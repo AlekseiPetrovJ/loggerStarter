@@ -1,17 +1,30 @@
 package ru.petrov.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import ru.petrov.model.Example;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/example")
 public class ExampleRestController {
-    @GetMapping
+    @Operation(summary = "Приветствие по имени", description = """
+            Принимает параметр name. Возвращает приветствие.
+            """)
+    @GetMapping()
     public ResponseEntity<?> hello(@RequestParam(defaultValue = "WORLD") String name) {
         return ResponseEntity.ok("Hello " + name + ".");
+    }
+
+    @Operation(summary = "Конткатенация строк", description = """
+            Присоединяет первую строку ко второй.
+            """)
+    @PostMapping()
+    public ResponseEntity<String> concatenation(@RequestBody Example example) {
+        String answer = example.getFirstString() + example.getSecondString();
+        return new ResponseEntity<>(answer, HttpStatus.OK);
+
     }
 }
 
