@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -16,6 +17,7 @@ import java.util.Enumeration;
 import java.util.UUID;
 
 @Slf4j
+@Setter
 public class LoggingFilter extends OncePerRequestFilter {
     @Value("${http-logger.log-url}")
     private String logUrl;
@@ -30,7 +32,7 @@ public class LoggingFilter extends OncePerRequestFilter {
      * @throws IOException
      */
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         if (!logUrl.equals(request.getRequestURI())) {
             filterChain.doFilter(request, response);
@@ -51,32 +53,28 @@ public class LoggingFilter extends OncePerRequestFilter {
     }
 
     private static void logResponse(UUID logUuid, ContentCachingResponseWrapper cResponse, long duration) {
-        log.info("""
-                        
+        try {
+            log.info("""
                         Log UUID {}\
-
                         Status: {}\
-                                                
                         Body: {}
-
                         Duration: {} ms""",
                 logUuid,
                 cResponse.getStatus(),
                 new String(cResponse.getContentAsByteArray(), StandardCharsets.UTF_8),
                 duration);
+        } catch (Exception e) {
+            log.error("Error logging response", e);
+        }
     }
 
     private static void logRequest(UUID logUuid, ContentCachingRequestWrapper cRequest) {
-        log.info("""
-                        
+        try {
+            log.info("""
                         Log UUID: {}\
-                                                
                         Incoming request: {} {}\
-
                         Headers: {}\
-
                         Body: {}\
-                        
                         Remote Addr: {}""",
                 logUuid,
                 cRequest.getMethod(),
@@ -84,10 +82,13 @@ public class LoggingFilter extends OncePerRequestFilter {
                 getHeader(cRequest),
                 new String(cRequest.getContentAsByteArray(), StandardCharsets.UTF_8),
                 cRequest.getRemoteAddr());
+        } catch (Exception e) {
+            log.error("Error logging request", e);
+        }
     }
 
 
-    private static StringBuilder getHeader(HttpServletRequest request) {
+    private static String getHeader(HttpServletRequest request) {
         Enumeration<String> headerNames = request.getHeaderNames();
         StringBuilder header = new StringBuilder();
         if (headerNames != null) {
@@ -97,6 +98,6 @@ public class LoggingFilter extends OncePerRequestFilter {
                 header.append(headerName).append(": ").append(headerValue).append("\n");
             }
         }
-        return header;
+        return header.toString();
     }
 }
