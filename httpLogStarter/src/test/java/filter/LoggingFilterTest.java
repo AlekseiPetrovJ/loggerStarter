@@ -76,7 +76,7 @@ public class LoggingFilterTest {
     }
 
     @Test
-    @DisplayName("ѕроверка, что логи пишутс€ если URL совпадает с настроенным LogUrl")
+    @DisplayName("Test write log if URL equals LogUrl")
     public void testDoFilterInternal_LogsRequestAndResponse() throws IOException, ServletException {
         request.setRequestURI("/log-url");
         request.setMethod("POST");
@@ -100,7 +100,7 @@ public class LoggingFilterTest {
     }
 
     @Test
-    @DisplayName("ѕроверка, что логи не пишутс€ если url не совпадает с настроенным на сбор")
+    @DisplayName("Test don't write log if URL not equals LogUrl")
     public void testDoFilterInternal_SkipsLoggingForDifferentUrl() throws IOException, ServletException {
         request.setRequestURI("/other-url");
 
